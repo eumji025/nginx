@@ -13,7 +13,7 @@ ngx_uint_t  ngx_pagesize;
 ngx_uint_t  ngx_pagesize_shift;
 ngx_uint_t  ngx_cacheline_size;
 
-
+//主要是封装了C语言的malloc函数的分配内存函数
 void *
 ngx_alloc(size_t size, ngx_log_t *log)
 {
@@ -30,7 +30,8 @@ ngx_alloc(size_t size, ngx_log_t *log)
     return p;
 }
 
-
+//封装ngx的ngx_alloc函数，添加初始化为0的方法
+//更高级的api
 void *
 ngx_calloc(size_t size, ngx_log_t *log)
 {
@@ -53,7 +54,8 @@ ngx_memalign(size_t alignment, size_t size, ngx_log_t *log)
 {
     void  *p;
     int    err;
-
+    //调用c语言的对齐内存预分配方法
+    //https://www.cnblogs.com/qi09/archive/2011/02/23/1962079.html
     err = posix_memalign(&p, alignment, size);
 
     if (err) {

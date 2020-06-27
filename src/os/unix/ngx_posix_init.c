@@ -49,8 +49,9 @@ ngx_os_init(ngx_log_t *log)
     if (ngx_init_setproctitle(log) != NGX_OK) {
         return NGX_ERROR;
     }
-
+    //获取系统的pagesize
     ngx_pagesize = getpagesize();
+    //获取cache line长度
     ngx_cacheline_size = NGX_CPU_CACHE_LINE;
 
     for (n = ngx_pagesize; n >>= 1; ngx_pagesize_shift++) { /* void */ }
@@ -71,15 +72,15 @@ ngx_os_init(ngx_log_t *log)
         ngx_cacheline_size = size;
     }
 #endif
-
+    //cpu信息
     ngx_cpuinfo();
-
+    //获取每个进程能打开最大文件数
     if (getrlimit(RLIMIT_NOFILE, &rlmt) == -1) {
         ngx_log_error(NGX_LOG_ALERT, log, errno,
                       "getrlimit(RLIMIT_NOFILE) failed");
         return NGX_ERROR;
     }
-
+    //设置最大的socket连接数
     ngx_max_sockets = (ngx_int_t) rlmt.rlim_cur;
 
 #if (NGX_HAVE_INHERITED_NONBLOCK || NGX_HAVE_ACCEPT4)
@@ -87,8 +88,9 @@ ngx_os_init(ngx_log_t *log)
 #else
     ngx_inherited_nonblocking = 0;
 #endif
-
+    //获取当前时间
     tp = ngx_timeofday();
+    //随机数seed的设置
     srandom(((unsigned) ngx_pid << 16) ^ tp->sec ^ tp->msec);
 
     return NGX_OK;

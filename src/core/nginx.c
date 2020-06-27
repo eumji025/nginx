@@ -190,7 +190,7 @@ static char        *ngx_signal;
 
 static char **ngx_os_environ;
 
-
+//nginx 启动的方法
 int ngx_cdecl
 main(int argc, char *const *argv)
 {
@@ -206,12 +206,13 @@ main(int argc, char *const *argv)
     if (ngx_strerror_init() != NGX_OK) {
         return 1;
     }
-
+    //ngx 用来解析命令行的参数
     if (ngx_get_options(argc, argv) != NGX_OK) {
         return 1;
     }
-
+    //如果是存在需要展示版本的
     if (ngx_show_version) {
+        //调用函数打印版本信息
         ngx_show_version_info();
 
         if (!ngx_test_config) {
@@ -220,16 +221,17 @@ main(int argc, char *const *argv)
     }
 
     /* TODO */ ngx_max_sockets = -1;
-
+    //时间初始化，并打印
     ngx_time_init();
 
+//存在pcre的时候，初始化ngx的正则表达式 插件
 #if (NGX_PCRE)
     ngx_regex_init();
 #endif
-
+    //获取pid和parent信息
     ngx_pid = ngx_getpid();
     ngx_parent = ngx_getppid();
-
+    //初始化日志
     log = ngx_log_init(ngx_prefix);
     if (log == NULL) {
         return 1;
@@ -244,24 +246,26 @@ main(int argc, char *const *argv)
      * init_cycle->log is required for signal handlers and
      * ngx_process_options()
      */
-
+    //初始化生命周期结构体的内存并初始化为0
     ngx_memzero(&init_cycle, sizeof(ngx_cycle_t));
     init_cycle.log = log;
     ngx_cycle = &init_cycle;
-
+    //创建1024大小的内存池
     init_cycle.pool = ngx_create_pool(1024, log);
+    //如果分配失败则返回1
     if (init_cycle.pool == NULL) {
         return 1;
     }
 
+    //记录命令行参数，复制
     if (ngx_save_argv(&init_cycle, argc, argv) != NGX_OK) {
         return 1;
     }
-
+    //处理命令行参数。将信息都注入到init_cycle
     if (ngx_process_options(&init_cycle) != NGX_OK) {
         return 1;
     }
-
+    //系统信息初始化，其实调用系统函数获取系统，句柄，时间等信息注册到init_cycle
     if (ngx_os_init(log) != NGX_OK) {
         return 1;
     }
@@ -269,7 +273,7 @@ main(int argc, char *const *argv)
     /*
      * ngx_crc32_table_init() requires ngx_cacheline_size set in ngx_os_init()
      */
-
+    //crc32初始化
     if (ngx_crc32_table_init() != NGX_OK) {
         return 1;
     }
@@ -277,17 +281,17 @@ main(int argc, char *const *argv)
     /*
      * ngx_slab_sizes_init() requires ngx_pagesize set in ngx_os_init()
      */
-
+    //slab初始化，貌似非常重要，暂时不懂
     ngx_slab_sizes_init();
-
+    //内存socket初始化
     if (ngx_add_inherited_sockets(&init_cycle) != NGX_OK) {
         return 1;
     }
-
+    //初始化模块
     if (ngx_preinit_modules() != NGX_OK) {
         return 1;
     }
-
+    //初始化cycle,创建新的init_cycle
     cycle = ngx_init_cycle(&init_cycle);
     if (cycle == NULL) {
         if (ngx_test_config) {
@@ -323,7 +327,7 @@ main(int argc, char *const *argv)
 
         return 0;
     }
-
+    //存在ngx_signal时候,直接调用ngx_signal_process处理
     if (ngx_signal) {
         return ngx_signal_process(cycle, ngx_signal);
     }
@@ -357,11 +361,11 @@ main(int argc, char *const *argv)
     }
 
 #endif
-
+    //创建pid文件
     if (ngx_create_pidfile(&ccf->pid, cycle->log) != NGX_OK) {
         return 1;
     }
-
+    //日志重定向
     if (ngx_log_redirect_stderr(cycle) != NGX_OK) {
         return 1;
     }
@@ -374,11 +378,13 @@ main(int argc, char *const *argv)
     }
 
     ngx_use_stderr = 0;
-
+    //如果ngx_process = 0
     if (ngx_process == NGX_PROCESS_SINGLE) {
+        //初始化单个进程模式
         ngx_single_process_cycle(cycle);
 
     } else {
+        //否则就是master-work模式
         ngx_master_process_cycle(cycle);
     }
 
@@ -737,7 +743,7 @@ ngx_exec_new_binary(ngx_cycle_t *cycle, char *const *argv)
     return pid;
 }
 
-
+//解析 nginx命令行参数
 static ngx_int_t
 ngx_get_options(int argc, char *const *argv)
 {
@@ -756,22 +762,22 @@ ngx_get_options(int argc, char *const *argv)
         while (*p) {
 
             switch (*p++) {
-
+            //如果是-? -h则表示需要查看帮助信息
             case '?':
             case 'h':
                 ngx_show_version = 1;
                 ngx_show_help = 1;
                 break;
-
+            //显示nginx的版本信息
             case 'v':
                 ngx_show_version = 1;
                 break;
-
+            //显示版本和配置信息
             case 'V':
                 ngx_show_version = 1;
                 ngx_show_configure = 1;
                 break;
-
+            //表示是test
             case 't':
                 ngx_test_config = 1;
                 break;
@@ -780,11 +786,11 @@ ngx_get_options(int argc, char *const *argv)
                 ngx_test_config = 1;
                 ngx_dump_config = 1;
                 break;
-
+            //退出
             case 'q':
                 ngx_quiet_mode = 1;
                 break;
-
+            //
             case 'p':
                 if (*p) {
                     ngx_prefix = p;
@@ -798,13 +804,13 @@ ngx_get_options(int argc, char *const *argv)
 
                 ngx_log_stderr(0, "option \"-p\" requires directory name");
                 return NGX_ERROR;
-
+            //-c 常用，表示配置文件
             case 'c':
                 if (*p) {
                     ngx_conf_file = p;
                     goto next;
                 }
-
+                //获取配置文件名称信息
                 if (argv[++i]) {
                     ngx_conf_file = (u_char *) argv[i];
                     goto next;
@@ -826,7 +832,7 @@ ngx_get_options(int argc, char *const *argv)
 
                 ngx_log_stderr(0, "option \"-g\" requires parameter");
                 return NGX_ERROR;
-
+            // 启动的命令，包括停止，退出，重新加载等
             case 's':
                 if (*p) {
                     ngx_signal = (char *) p;
@@ -907,17 +913,19 @@ ngx_save_argv(ngx_cycle_t *cycle, int argc, char *const *argv)
     return NGX_OK;
 }
 
-
+//
 static ngx_int_t
 ngx_process_options(ngx_cycle_t *cycle)
 {
     u_char  *p;
     size_t   len;
-
+    //如果存在前缀的 情况下
     if (ngx_prefix) {
         len = ngx_strlen(ngx_prefix);
         p = ngx_prefix;
 
+        //判断最后一位是否为分隔符
+        //比如/user/local => 会被包装成/user/local/
         if (len && !ngx_path_separator(p[len - 1])) {
             p = ngx_pnalloc(cycle->pool, len + 1);
             if (p == NULL) {
@@ -927,7 +935,7 @@ ngx_process_options(ngx_cycle_t *cycle)
             ngx_memcpy(p, ngx_prefix, len);
             p[len++] = '/';
         }
-
+        //设置前缀的基本信息
         cycle->conf_prefix.len = len;
         cycle->conf_prefix.data = p;
         cycle->prefix.len = len;
@@ -967,7 +975,8 @@ ngx_process_options(ngx_cycle_t *cycle)
 
 #endif
     }
-
+    //如果存在配置的nginx.conf
+    //记录conf的长度和路径
     if (ngx_conf_file) {
         cycle->conf_file.len = ngx_strlen(ngx_conf_file);
         cycle->conf_file.data = ngx_conf_file;
@@ -975,7 +984,7 @@ ngx_process_options(ngx_cycle_t *cycle)
     } else {
         ngx_str_set(&cycle->conf_file, NGX_CONF_PATH);
     }
-
+    //全路径解析 ，如果有前缀则进行 拼接之类的
     if (ngx_conf_full_name(cycle, &cycle->conf_file, 0) != NGX_OK) {
         return NGX_ERROR;
     }
@@ -990,12 +999,12 @@ ngx_process_options(ngx_cycle_t *cycle)
             break;
         }
     }
-
+    //记录命令行的参数信息
     if (ngx_conf_params) {
         cycle->conf_param.len = ngx_strlen(ngx_conf_params);
         cycle->conf_param.data = ngx_conf_params;
     }
-
+    //如果是test，则设置log的级别为info
     if (ngx_test_config) {
         cycle->log->log_level = NGX_LOG_INFO;
     }

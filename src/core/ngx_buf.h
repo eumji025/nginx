@@ -57,14 +57,14 @@ struct ngx_buf_s {
 
 
 struct ngx_chain_s {
-    ngx_buf_t    *buf;
-    ngx_chain_t  *next;
+    ngx_buf_t    *buf; //缓冲区地址
+    ngx_chain_t  *next; //下一个缓冲区
 };
 
 
 typedef struct {
-    ngx_int_t    num;
-    size_t       size;
+    ngx_int_t    num; //缓冲你去数量
+    size_t       size; //缓冲区大小
 } ngx_bufs_t;
 
 

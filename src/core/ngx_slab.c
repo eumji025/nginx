@@ -81,12 +81,13 @@ static ngx_uint_t  ngx_slab_max_size;
 static ngx_uint_t  ngx_slab_exact_size;
 static ngx_uint_t  ngx_slab_exact_shift;
 
-
+//slab内存初始化，也是比较复杂的地方吧
+//https://www.cnblogs.com/doop-ymc/p/3412572.html
 void
 ngx_slab_sizes_init(void)
 {
     ngx_uint_t  n;
-
+    //slab最大大小
     ngx_slab_max_size = ngx_pagesize / 2;
     ngx_slab_exact_size = ngx_pagesize / (8 * sizeof(uintptr_t));
     for (n = ngx_slab_exact_size; n >>= 1; ngx_slab_exact_shift++) {

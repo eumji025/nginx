@@ -65,19 +65,19 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
 
     log = old_cycle->log;
-
+    //创建池子,默认大小16K
     pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log);
     if (pool == NULL) {
         return NULL;
     }
     pool->log = log;
-
+    //初始化cycle,为什么要搞两次呢 ?
     cycle = ngx_pcalloc(pool, sizeof(ngx_cycle_t));
     if (cycle == NULL) {
         ngx_destroy_pool(pool);
         return NULL;
     }
-
+    //复制旧的到新 的cycle
     cycle->pool = pool;
     cycle->log = log;
     cycle->old_cycle = old_cycle;

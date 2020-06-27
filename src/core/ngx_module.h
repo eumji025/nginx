@@ -273,7 +273,7 @@ ngx_int_t ngx_count_modules(ngx_cycle_t *cycle, ngx_uint_t type);
 ngx_int_t ngx_add_module(ngx_conf_t *cf, ngx_str_t *file,
     ngx_module_t *module, char **order);
 
-
+//这个文件是编译生成的
 extern ngx_module_t  *ngx_modules[];
 extern ngx_uint_t     ngx_max_module;
 

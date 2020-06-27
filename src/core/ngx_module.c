@@ -26,12 +26,13 @@ ngx_int_t
 ngx_preinit_modules(void)
 {
     ngx_uint_t  i;
-
+    //遍历所有加入的模块，这个是编译的时候会在objs/ngx_modules.c文件生成
     for (i = 0; ngx_modules[i]; i++) {
         ngx_modules[i]->index = i;
         ngx_modules[i]->name = ngx_module_names[i];
     }
 
+    //记录模块数量
     ngx_modules_n = i;
     ngx_max_module = ngx_modules_n + NGX_MAX_DYNAMIC_MODULES;
 

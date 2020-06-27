@@ -101,7 +101,8 @@ uint32_t  ngx_crc32_table256[] = {
 
 uint32_t *ngx_crc32_table_short = ngx_crc32_table16;
 
-
+//循环冗余校验码初始化
+//https://blog.csdn.net/joescott/article/details/17039033
 ngx_int_t
 ngx_crc32_table_init(void)
 {

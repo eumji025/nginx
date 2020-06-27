@@ -32,36 +32,36 @@ typedef void (*ngx_pool_cleanup_pt)(void *data);
 typedef struct ngx_pool_cleanup_s  ngx_pool_cleanup_t;
 
 struct ngx_pool_cleanup_s {
-    ngx_pool_cleanup_pt   handler;
-    void                 *data;
-    ngx_pool_cleanup_t   *next;
+    ngx_pool_cleanup_pt   handler; //回调函数
+    void                 *data; //指向存储的数据地址
+    ngx_pool_cleanup_t   *next; //下一个清理的回调函数指针
 };
 
 
 typedef struct ngx_pool_large_s  ngx_pool_large_t;
 
 struct ngx_pool_large_s {
-    ngx_pool_large_t     *next;
-    void                 *alloc;
+    ngx_pool_large_t     *next; //下一个大对象地址
+    void                 *alloc; //分配数据的指针地址
 };
 
 
 typedef struct {
-    u_char               *last;
-    u_char               *end;
-    ngx_pool_t           *next;
-    ngx_uint_t            failed;
+    u_char               *last; //未使用内存的起点地址
+    u_char               *end; //内存池结束的地址
+    ngx_pool_t           *next; //下一个内存池
+    ngx_uint_t            failed; //失败的次数
 } ngx_pool_data_t;
 
-
+// ngx 内存池结构
 struct ngx_pool_s {
-    ngx_pool_data_t       d;
-    size_t                max;
-    ngx_pool_t           *current;
-    ngx_chain_t          *chain;
-    ngx_pool_large_t     *large;
-    ngx_pool_cleanup_t   *cleanup;
-    ngx_log_t            *log;
+    ngx_pool_data_t       d; //内存池实际的数据区结构
+    size_t                max; //最大可分配内存大小
+    ngx_pool_t           *current; //当前内存池的地址 指针，
+    ngx_chain_t          *chain; //缓冲区的链表
+    ngx_pool_large_t     *large; //存放大对象，大数据的链表
+    ngx_pool_cleanup_t   *cleanup; //自定义回调函数，用来清除内存
+    ngx_log_t            *log; //日志
 };
 
 
